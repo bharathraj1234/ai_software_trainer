@@ -1,29 +1,72 @@
 import requests
 import json
 
-response = requests.post(
-    "http://localhost:11434/api/generate",
-    json={
-        "model": "gemma3:4b",
-        "prompt": "How do I create a folder?",
-        "stream": True
-    },
-    stream=True
-)
+# Store the entire conversation
+messages = [
+    {
+        "role": "system",
+        "content": "You are a helpful AI assistant. Reply in plain text without markdown."
+    }
+]
 
-full_answer = ""
+print("=" * 50)
+print("        Gemma AI Chatbot")
+print("Type 'exit' to quit.")
+print("=" * 50)
 
-for line in response.iter_lines():
+while True:
 
-    if line:
+    # Get user input
+    user_input = input("\nYou: how can i help you ")
 
-        data = json.loads(line)
+    # Exit condition
+    if user_input.lower() == "exit":
+        print("\nGoodbye!")
+        break
 
-        chunk = data.get("response", "")
+    # Add user message to conversation
+    messages.append(
+        {
+            "role": "user",
+            "content": user_input
+        }
+    )
 
-        print(chunk, end="", flush=True)
+    # Send conversation to Ollama
+    response = requests.post(
+        "http://localhost:11434/api/chat",
+        json={
+            "model": "gemma3:4b",
+            "messages": messages
+        },
+        stream=True
+    )
 
-        full_answer += chunk
+    print("\nGemma: ", end="", flush=True)
 
-print("\n\nFinal Answer:")
-print(full_answer)
+    assistant_reply = ""
+
+    # Read streamed response
+    for line in response.iter_lines():
+
+        if line:
+
+            data = json.loads(line)
+
+            if "message" in data:
+
+                chunk = data["message"]["content"]
+
+                print(chunk, end="", flush=True)
+
+                assistant_reply += chunk
+
+   
+
+    # Save AI response
+    messages.append(
+        {
+            "role": "assistant",
+            "content": assistant_reply
+        }
+    )
