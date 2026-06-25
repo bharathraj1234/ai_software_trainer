@@ -28,7 +28,13 @@ while True:
     messages.append(
         {
             "role": "user",
-            "content": user_input
+            "content": """
+                        You are an AI Software Trainer.
+                        Look at screenshots.
+                        Guide users.
+                        One step at a time.
+                        try to respond in short instructions or ask more question no too much epxlanation needed
+                        dont add * in the response""" + user_input
         }
     )
 
