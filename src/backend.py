@@ -48,20 +48,14 @@ def speak(text):
         print("Saved as output.wav")
         subprocess.run(["aplay", "output.wav"])
 
-def gemma_call(text):
-
-    # Exit condition
-    if user_input.lower() == "exit":
-        print("\nGoodbye!")
-        return False
-        
+def gemma_call(user_input):
+ 
 
     # Add user message to conversation
     messages.append(
         {
             "role": "user",
-            "content": """
-                        """ + user_input
+            "content": user_input
         }
     )
 
@@ -110,11 +104,4 @@ def gemma_call(text):
         }
     )
 
-
-while True:
-
-    user_input = input("You: ")
-
-    answer = gemma_call(user_input)
-
-
+    return assistant_reply

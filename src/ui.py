@@ -1,7 +1,9 @@
 
-from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QLabel, QPushButton, QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QGraphicsDropShadowEffect
+from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QLabel, QPushButton, QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QGraphicsDropShadowEffect,QScrollArea,QSizePolicy
 from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtGui import QColor, QFont
+from backend import gemma_call
+from math import sqrt
 
 class AITrainer(QWidget):
     def __init__(self):
@@ -39,6 +41,8 @@ class AITrainer(QWidget):
         self.input.setPlaceholderText("Ask anything...")
         self.send_button=QPushButton("➜")
         self.send_button.setFixedSize(55,45)
+        self.send_button.clicked.connect(self.send_message)
+        self.input.returnPressed.connect(self.send_message)
 
     def create_layout(self):
         outer=QVBoxLayout(self)
@@ -79,6 +83,41 @@ class AITrainer(QWidget):
     def mouseMoveEvent(self,event):
         if event.buttons()==Qt.MouseButton.LeftButton:
             self.move(event.globalPosition().toPoint()-self.drag_position)
+
+    def send_message(self):
+        prompt = self.input.text()
+        # self.chat.append(f"You: {prompt}") # instead for this we use below for being in the right side
+        self.chat.append(f"""
+            <div align="right">
+            <span style="
+            background:#5865F2;
+            color:white;
+            padding:8px 12px;
+            border-radius:10px;
+            ">
+            {prompt}
+            </span>
+            </div>
+            """)
+        QApplication.processEvents()
+        answer = gemma_call(prompt)
+        # self.chat.append(f"AI: {answer}")  # same for this also
+        self.chat.append(f"""
+            <div align="left">
+            <span style="
+            background:#3A3C42;
+            color:white;
+            padding:8px 12px;
+            border-radius:10px;
+            ">
+            {answer}
+            </span>
+            </div>
+            """)
+        self.input.clear()
+        print(answer)
+
+    
 
 if __name__=="__main__":
     app=QApplication([])
