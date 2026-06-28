@@ -1,45 +1,87 @@
-from PyQt6.QtWidgets import QApplication,QWidget,QFrame,QLabel,QPushButton,QLineEdit,QTextEdit,QVBoxLayout,QHBoxLayout,QGraphicsDropShadowEffect
-from PyQt6.QtCore import Qt,QPoint
-from PyQt6.QtGui import QColor,QFont
+
+from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QLabel, QPushButton, QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QGraphicsDropShadowEffect
+from PyQt6.QtCore import Qt, QPoint
+from PyQt6.QtGui import QColor, QFont
 
 class AITrainer(QWidget):
     def __init__(self):
         super().__init__()
-        self.drag_position=QPoint()
+        self.drag_position = QPoint()
+        self.setup_window()
+        self.create_widgets()
+        self.create_layout()
+        self.apply_style()
+
+    def setup_window(self):
         self.setWindowTitle("AI Software Trainer")
         self.resize(500,580)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        outer=QVBoxLayout(self); outer.setContentsMargins(15,15,15,15)
-        card=QFrame(); card.setObjectName("card")
-        sh=QGraphicsDropShadowEffect(); sh.setBlurRadius(45); sh.setOffset(0,8); sh.setColor(QColor(0,0,0,170)); card.setGraphicsEffect(sh)
-        outer.addWidget(card)
-        layout=QVBoxLayout(card); layout.setContentsMargins(20,20,20,20); layout.setSpacing(15)
-        h=QHBoxLayout()
-        t=QLabel("AI Software Trainer"); t.setFont(QFont("Segoe UI",13,QFont.Weight.Bold)); h.addWidget(t); h.addStretch()
-        c=QPushButton("✕"); c.setFixedSize(32,32); c.clicked.connect(self.close); h.addWidget(c); layout.addLayout(h)
-        s=QLabel("🟢 Ready"); s.setObjectName("status"); layout.addWidget(s)
-        self.chat=QTextEdit(); self.chat.setReadOnly(True); self.chat.append("Welcome 👋\n\nThis is your AI Software Trainer."); layout.addWidget(self.chat)
-        b=QHBoxLayout(); self.input=QLineEdit(); self.input.setPlaceholderText("Ask anything..."); send=QPushButton("➜"); send.setFixedSize(55,45); b.addWidget(self.input); b.addWidget(send); layout.addLayout(b)
-        self.setStyleSheet("""
-        QWidget{background:transparent;}
-        #card{background:#2B2D31;border-radius:28px;border:1px solid rgba(255,255,255,20);}
-        QLabel{color:#F2F2F2;background:transparent;font-size:14px;}
-        #status{color:#A9B0B8;font-size:13px;}
-        QTextEdit{background:#202225;color:#ECECEC;border:none;border-radius:18px;padding:15px;font-size:14px;}
-        QLineEdit{background:#1C1D21;color:white;border:1px solid rgba(255,255,255,25);border-radius:18px;padding:12px;font-size:14px;}
-        QLineEdit::placeholder{color:#808080;}
-        QPushButton{background:#5865F2;color:white;border:none;border-radius:16px;font-size:16px;font-weight:bold;}
-        QPushButton:hover{background:#6B77FF;}
-        QPushButton:pressed{background:#4652D9;}
-        """)
-    def mousePressEvent(self,e):
-        if e.button()==Qt.MouseButton.LeftButton:
-            self.drag_position=e.globalPosition().toPoint()-self.frameGeometry().topLeft()
-    def mouseMoveEvent(self,e):
-        if e.buttons()==Qt.MouseButton.LeftButton:
-            self.move(e.globalPosition().toPoint()-self.drag_position)
 
-app=QApplication([])
-w=AITrainer(); w.show()
-app.exec()
+    def create_widgets(self):
+        self.card=QFrame()
+        self.card.setObjectName("card")
+        shadow=QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(45)
+        shadow.setOffset(0,8)
+        shadow.setColor(QColor(0,0,0,170))
+        self.card.setGraphicsEffect(shadow)
+        self.title=QLabel("AI Software Trainer")
+        self.title.setFont(QFont("Segoe UI",13,QFont.Weight.Bold))
+        self.status=QLabel("Ready")
+        self.close_button=QPushButton("✕")
+        self.close_button.setFixedSize(32,32)
+        self.close_button.clicked.connect(self.close)
+        self.chat=QTextEdit()
+        self.chat.setReadOnly(True)
+        self.chat.setPlaceholderText("Conversation will appear here...")
+        self.input=QLineEdit()
+        self.input.setPlaceholderText("Ask anything...")
+        self.send_button=QPushButton("➜")
+        self.send_button.setFixedSize(55,45)
+
+    def create_layout(self):
+        outer=QVBoxLayout(self)
+        outer.setContentsMargins(15,15,15,15)
+        outer.addWidget(self.card)
+        card_layout=QVBoxLayout(self.card)
+        card_layout.setContentsMargins(20,20,20,20)
+        card_layout.setSpacing(15)
+        header=QHBoxLayout()
+        header.addWidget(self.title)
+        header.addStretch()
+        header.addWidget(self.close_button)
+        bottom=QHBoxLayout()
+        bottom.addWidget(self.input)
+        bottom.addWidget(self.send_button)
+        card_layout.addLayout(header)
+        card_layout.addWidget(self.status)
+        card_layout.addWidget(self.chat)
+        card_layout.addLayout(bottom)
+
+    def apply_style(self):
+        self.setStyleSheet('''
+        QWidget{background:transparent;}
+        #card{background:#2B2D31;border-radius:28px;border:1px solid rgba(255,255,255,18);}
+        QLabel{color:#F4F4F4;background:transparent;font-size:14px;}
+        QTextEdit{background:#202225;color:#ECECEC;border:none;border-radius:16px;padding:12px;font-size:14px;}
+        QLineEdit{background:#1C1D21;color:white;border:1px solid rgba(255,255,255,20);border-radius:18px;padding:12px;font-size:14px;}
+        QLineEdit::placeholder{color:#7D7D7D;}
+        QPushButton{background:#5865F2;color:white;border:none;border-radius:16px;font-size:15px;font-weight:bold;}
+        QPushButton:hover{background:#6F7BFF;}
+        QPushButton:pressed{background:#4652D9;}
+        ''')
+
+    def mousePressEvent(self,event):
+        if event.button()==Qt.MouseButton.LeftButton:
+            self.drag_position=event.globalPosition().toPoint()-self.frameGeometry().topLeft()
+
+    def mouseMoveEvent(self,event):
+        if event.buttons()==Qt.MouseButton.LeftButton:
+            self.move(event.globalPosition().toPoint()-self.drag_position)
+
+if __name__=="__main__":
+    app=QApplication([])
+    window=AITrainer()
+    window.show()
+    app.exec()

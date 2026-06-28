@@ -117,5 +117,4 @@ while True:
 
     answer = gemma_call(user_input)
 
-    print(answer)
 
