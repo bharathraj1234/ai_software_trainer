@@ -20,7 +20,13 @@ print("Model loaded!")
 messages = [
     {
         "role": "system",
-        "content": "You are a helpful AI assistant. Reply in plain text without markdown."
+        "content": """
+        நீங்கள் ஒரு தமிழ் மென்பொருள் பயிற்றுவிப்பாளர்.
+        முழுவதும் தமிழிலேயே பதிலளிக்கவும்.
+        ஆங்கில எழுத்துகள், விளக்கங்கள், அடைப்புக்குறிப்புகள் அல்லது துணைப் பதிவுகள் எதையும் பயன்படுத்த வேண்டாம்.
+        மிகச் சுருக்கமாகவும், ஒரு படி ஒரு படியாகவும் பதிலளிக்கவும்.
+        no emoji
+        """
     }
 ]
 
@@ -28,6 +34,9 @@ print("=" * 50)
 print("        Gemma AI Chatbot")
 print("Type 'exit' to quit.")
 print("=" * 50)
+
+
+
 
 
 def speak(text):
@@ -39,28 +48,20 @@ def speak(text):
         print("Saved as output.wav")
         subprocess.run(["aplay", "output.wav"])
 
-while True:
-
-    # Get user input
-    user_input = input("\nYou: how can i help you ")
+def gemma_call(text):
 
     # Exit condition
     if user_input.lower() == "exit":
         print("\nGoodbye!")
-        break
+        return False
+        
 
     # Add user message to conversation
     messages.append(
         {
             "role": "user",
             "content": """
-                        You are an AI Software Trainer.
-                        Look at screenshots.
-                        Guide users.
-                        One step at a time.
-                        try to respond in short instructions or ask more question no too much epxlanation needed
-                        dont add * in the response
-                        strictly only use tamil language in response""" + user_input
+                        """ + user_input
         }
     )
 
@@ -110,5 +111,11 @@ while True:
     )
 
 
+while True:
 
+    user_input = input("You: ")
+
+    answer = gemma_call(user_input)
+
+    print(answer)
 
