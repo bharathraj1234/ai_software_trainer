@@ -26,13 +26,14 @@ messages = [
         ஆங்கில எழுத்துகள், விளக்கங்கள், அடைப்புக்குறிப்புகள் அல்லது துணைப் பதிவுகள் எதையும் பயன்படுத்த வேண்டாம்.
         மிகச் சுருக்கமாகவும், ஒரு படி ஒரு படியாகவும் பதிலளிக்கவும்.
         no emoji
+        clear all the * in the response             
         """
     }
 ]
 
 print("=" * 50)
 print("        Gemma AI Chatbot")
-print("Type 'exit' to quit.")
+#   
 print("=" * 50)
 
 
@@ -92,7 +93,7 @@ def gemma_call(user_input):
 
                     print("\n\nGeneration Complete!")
 
-                    speak(assistant_reply)
+                    # speak(assistant_reply)
 
    
 

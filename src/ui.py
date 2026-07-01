@@ -1,14 +1,24 @@
 
 from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QLabel, QPushButton, QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QGraphicsDropShadowEffect,QScrollArea,QSizePolicy
-from PyQt6.QtCore import Qt, QPoint
-from PyQt6.QtGui import QColor, QFont
-from backend import gemma_call
+from PyQt6.QtCore import Qt, QPoint,QSize
+from PyQt6.QtGui import QColor, QFont,QIcon
+from backend import gemma_call,speak
 from math import sqrt
+from pathlib import Path
+import requests
+
+
+BASE = Path(__file__).resolve().parent
+
+ICON = BASE.parent / "icons" / "camera.svg"
+
 
 class AITrainer(QWidget):
     def __init__(self):
         super().__init__()
         self.drag_position = QPoint()
+        self.resizing = False
+        self.resize_margin = 10
         self.setup_window()
         self.create_widgets()
         self.create_layout()
@@ -17,7 +27,7 @@ class AITrainer(QWidget):
     def setup_window(self):
         self.setWindowTitle("AI Software Trainer")
         self.resize(500,580)
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        Qt.WindowType.FramelessWindowHint
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
     def create_widgets(self):
@@ -30,7 +40,8 @@ class AITrainer(QWidget):
         self.card.setGraphicsEffect(shadow)
         self.title=QLabel("AI Software Trainer")
         self.title.setFont(QFont("Segoe UI",13,QFont.Weight.Bold))
-        self.status=QLabel("Ready")
+        
+        
         self.close_button=QPushButton("✕")
         self.close_button.setFixedSize(32,32)
         self.close_button.clicked.connect(self.close)
@@ -41,8 +52,24 @@ class AITrainer(QWidget):
         self.input.setPlaceholderText("Ask anything...")
         self.send_button=QPushButton("➜")
         self.send_button.setFixedSize(55,45)
+        self.screenshot_button = QPushButton("🔎")
+        self.screenshot_button.setFixedSize(45,45)
+        self.screenshot_button.setStyleSheet("""
+        QPushButton{
+        background:#3B3D45;
+        color:white;
+        border-radius:14px;
+        }
+        QPushButton:hover{
+        background:#50535A;
+        }
+        """)
+        self.status = QLabel(" Ready  🟢")
+        
+
         self.send_button.clicked.connect(self.send_message)
         self.input.returnPressed.connect(self.send_message)
+
 
     def create_layout(self):
         outer=QVBoxLayout(self)
@@ -56,12 +83,14 @@ class AITrainer(QWidget):
         header.addStretch()
         header.addWidget(self.close_button)
         bottom=QHBoxLayout()
+        bottom.addWidget(self.screenshot_button)
         bottom.addWidget(self.input)
         bottom.addWidget(self.send_button)
         card_layout.addLayout(header)
         card_layout.addWidget(self.status)
         card_layout.addWidget(self.chat)
         card_layout.addLayout(bottom)
+        
 
     def apply_style(self):
         self.setStyleSheet('''
@@ -76,46 +105,87 @@ class AITrainer(QWidget):
         QPushButton:pressed{background:#4652D9;}
         ''')
 
-    def mousePressEvent(self,event):
-        if event.button()==Qt.MouseButton.LeftButton:
-            self.drag_position=event.globalPosition().toPoint()-self.frameGeometry().topLeft()
+    def mousePressEvent(self, event):
 
-    def mouseMoveEvent(self,event):
-        if event.buttons()==Qt.MouseButton.LeftButton:
-            self.move(event.globalPosition().toPoint()-self.drag_position)
+        if event.button() != Qt.MouseButton.LeftButton:
+            return
+
+        # Check if the mouse is at the bottom-right corner
+        if (
+            event.position().x() >= self.width() - self.resize_margin and
+            event.position().y() >= self.height() - self.resize_margin
+        ):
+            self.resizing = True
+            return
+
+        # Otherwise, start dragging
+        self.drag_position = (
+            event.globalPosition().toPoint()
+            - self.frameGeometry().topLeft()
+        )
+
+    def mouseMoveEvent(self, event):
+
+        # If we are resizing
+        if self.resizing:
+
+            self.resize(
+            max(400, int(event.position().x())),
+            max(300, int(event.position().y()))
+        )
+
+        return
+
+        # Otherwise drag the window
+        if event.buttons() == Qt.MouseButton.LeftButton:
+
+            self.move(
+                event.globalPosition().toPoint()
+                - self.drag_position
+            )
+    def mouseReleaseEvent(self, event):
+
+        self.resizing = False
+    
 
     def send_message(self):
-        prompt = self.input.text()
+        prompt = self.input.text().strip()
+        if not prompt:
+            return
         # self.chat.append(f"You: {prompt}") # instead for this we use below for being in the right side
         self.chat.append(f"""
-            <div align="right">
-            <span style="
-            background:#5865F2;
-            color:white;
-            padding:8px 12px;
-            border-radius:10px;
-            ">
+            <table width="100%">
+            <tr>
+            <td align="right">
+            <font color="#ffffff">
+            <b>You</b><br>
             {prompt}
-            </span>
-            </div>
+            </font>
+            </td>
+            </tr>
+            </table>
             """)
+        QApplication.processEvents()
+        self.input.clear()
         QApplication.processEvents()
         answer = gemma_call(prompt)
         # self.chat.append(f"AI: {answer}")  # same for this also
         self.chat.append(f"""
-            <div align="left">
-            <span style="
-            background:#3A3C42;
-            color:white;
-            padding:8px 12px;
-            border-radius:10px;
-            ">
+            <table width="100%">
+            <tr>
+            <td align="left">
+            <font color="#ffffff">
+            <b>Gemma</b><br>
             {answer}
-            </span>
-            </div>
+            </font>
+            </td>
+            </tr>
+            </table>
             """)
         self.input.clear()
         print(answer)
+        QApplication.processEvents()
+        speak(answer)
 
     
 
